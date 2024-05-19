@@ -4,7 +4,6 @@ void jeu(){
     clear_bitmap(page);
 
     debut_jeu = clock();
-    initialisation_perso();
     initialisation_file();
     ajout_commande();
 

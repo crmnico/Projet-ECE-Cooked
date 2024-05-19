@@ -13,4 +13,6 @@ void initialisation_perso(){
     perso1.en_main_al=NULL;
     perso2.en_main_as=NULL;
     perso2.en_main_al=NULL;
+    perso1.num_skin=0;
+    perso2.num_skin=0;
 }

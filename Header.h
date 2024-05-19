@@ -12,134 +12,129 @@
 #include <time.h>
 #include <math.h>
 
-/*
-typedef struct sequence
-{
-    char *nomSource; // nom du fichier image contenant la s�quence
-    int nimg;        // nombre d'images dans la s�quence
-    int tx,ty;       // largeur et hauteur des images de la s�quence
-    int ncol;        // nbr images cotes � cotes horizontalement dans le fichier image
-    BITMAP **img;    // tableau de pointeurs pour indiquer les images
-} t_sequence;
 
-/*
-typedef struct {
-    //ALLEGRO_DISPLAY *display;
-   // bool running;
-    Player *player1;
-    Player *player2;
-    Level *level;
-} Game;
+////COMMANDE////
+enum Plat_Menu {BURGER_C};
+enum Ingredient_Menu { PAIN_C, STEAK_C, SALADE_C, TOMATE_C};
 
-typedef struct {
-    int score_player1;
-    int score_player2;
-    int score_team;
-} Score;
-
-
-typedef enum {
-    INGREDIENT,
-    ASSIETTE,
-    // Ajouter d'autres types d'entités selon les besoins du jeu
-} EntityType;
-
-typedef enum {
-  PlAN_DE_TRAVAIL,
-  PLAQUE_DE_CUISSON,
-  ESPACE_DE_COUPE,
-  TAPIS_ROULANT,
-  COFFRE_INGREDIENT,
-  DISTRIBUTEUR_DASSIETTES,
-  POUBELLE,
-  SORTI_DE_CUISSINE,
-  PARQUET,
-  CARRELAGE,
-};
-
-*/
-
-enum Plat_Menu {BURGER};
-enum Ingredient_Menu { PAIN, STEAK, SALADE, TOMATE};
 enum Direction { NORTH, SOUTH, EAST, WEST, NORTHWEST, NORTHEAST, SOUTHWEST, SOUTHEAST,STOP };
 enum Type_case{VIDE, PLAN_DE_TRAVAIL, PLANCHE_A_DECOUPE, POELE, MARMITE, POUBELLE, DISTRIBUTEUR_D_ASSIETTES, SORTIE_DE_CUISINE,COFFRE_INGREDIENT};
+enum Objet{RIEN,TOMATE,TOMATE_COUPE,SALADE_COUPE,PAIN,STEAK,STEAK_CUIT};
 
 // Structure de la commande
 typedef struct Command {
-    enum Plat_Menu plat;
-    enum Ingredient_Menu ingredient[4];
     int nb_ingredient;
+    int ingredient;
     long time;  // Temps limite pour servir la commande
     struct Command *next; // Pointeur vers la prochaine commande dans la liste
     struct Command *previous; // Pointeur vers la commande précédente dans la liste
 } Command;
 
 typedef struct {
-    char *nomSource;  // nom du fichier image contenant la s�quence
-    int nimg;        // nombre d'images dans la s�quence
-    int tx,ty;       // largeur et hauteur des images de la s�quence
+    int num_skin;
     char pseudo[50];
     int pos_x, pos_y;
     int dx, dy;
-    int precx, precy;  // coordonn�es pr�c�dent le d�placement
+    int precx, precy , precdx, precdy;  // coordonn�es pr�c�dent le d�placement
     int frame_counter;
     enum Direction current_direction;
-    //int score;
+    int action;
+    struct Assiette *en_main_as;
+    struct Alliment *en_main_al;
+    int score;
 }Personnage;
 
-// Structure de la file
+// Structure des assiettes
+typedef struct Assiette{
+    int pos_x,pos_y;
+    int en_main;
+    int nb_ingredients;
+    struct Assiette *next;
+    struct Assiette *previous;
+}Assiette;
+
+// Structure des alliments
+typedef struct Alliment{
+    int pos_x,pos_y;
+    int en_main;
+    int decoupe,cuisson;
+    int objet;
+    struct Alliment *next;
+    struct Alliment *previous;
+}Alliment;
+
+// Structure des niveaux
+typedef struct {
+    int score_team;
+    int actuel;
+    int map[12][20];
+    BITMAP *map_graphique;
+    int type_x[4],type_y[4];
+} Niveau;
+
+// Structure de la file des commandes
 typedef struct {
     Command *debut;
     Command *fin;
-} File;
+} File_commade;
 
-/*
+// Structure de la file des assiettes
 typedef struct {
-    char map[20][12];
-    enum Type_case type_case;
-}Niveau;
-*/
+    Assiette *debut;
+    Assiette *fin;
+} File_assiette;
+
+// Structure de la file des aliments
+typedef struct {
+    Alliment *debut;
+    Alliment *fin;
+} File_alliment;
+
+
 
 /////////GLOBAL VARIABLE/////////
 #define TAILLE_ECRAN_H 600
 #define TAILLE_ECRAN_L 800
 
 
-#define MAX_COMMAND_TIME 30 // Temps maximum pour servir une commande (en secondes)
+#define MAX_COMMAND_TIME 100 // Temps maximum pour servir une commande (en secondes)
+#define MAX_CUISSON_TIME 1500   //Temps au bout du quel l'aliment crame
+#define MIN_CUISSON_TIME 1000   //Temps de cuisson des aliments
 #define MIN_INTERVAL 5 // Intervalle minimum entre les commandes (en secondes)
 #define MAX_INTERVAL 10 // Intervalle maximum entre les commandes (en secondes)
 #define MIN_FOODS 2 // Nombre minimum d'aliments dans une commande
 #define MAX_FOODS 4 // Nombre maximum d'aliments dans une commande
+#define VITESSE_PERSO 5
 
-//Niveau niveau1;
 Personnage perso1;
 Personnage perso2;
-Command command;
-File file;
-
-char map_niv1[12][20];
+Niveau niveau[8];
+File_commade file_commande;
+File_assiette file_assiette;
+File_alliment file_alliment;
 
 clock_t debut_jeu, fin_jeu,debut_com;
 
-BITMAP *video_planete[301];
-
 BITMAP *page;
-BITMAP *map;
-BITMAP *direction_images[9][7]; // 9 directions, 7 images per direction
+BITMAP *direction_images[9][4][5]; // 9 directions, 7 images per direction
 BITMAP *menu;
-BITMAP *calque_menu[4];
+BITMAP *menu_pseudo;
+BITMAP *choix_skins;
+BITMAP *calque_menu[5];
+BITMAP *calque_carte[10];
 BITMAP *options;
 BITMAP *panneau[3];
-BITMAP *panneau_plat[10];
-BITMAP *etiquette[10];
-BITMAP *etiquette_cuisson[10];
-BITMAP *objet;
+BITMAP *etiquette;
+BITMAP *etiquette_cuisson;
+BITMAP *objet[50];
+BITMAP *objet_cuit_couper[24];
+BITMAP *plat[128];
+BITMAP *feu[4];
 
 int main();
 void initialisation();
-void initialise_menu();
 void initialisation_perso();
-void initialisation_file(File *file);
+void initialisation_file();
 void initialisation_niveau();
 
 float mesurer_temps(clock_t debut, clock_t fin);
@@ -148,31 +143,53 @@ int nombre_aleatoire(int min, int max);
 ////IMAGES////
 void chargement_images();
 void chargement_perso1();
+void chargement_objets();
 void chargement_commande();
 void chargement_menu();
+void chargement_map();
 
 ////MENU////
 void menu_1();
 void menu_options();
-
+void choix_pseudo();
+void choix_skin();
+void choix_du_niveaux();
 ////JEU////
 void jeu();
 
 ////PERSO////
 void mouvement_perso1();
 void mouvement_perso2();
+void action_perso1();
+void action_perso2();
 
-void colisions_perso();
+int colisions_perso();
 void colisions_map();
 void update_direction();
 void update_position();
 void update_frame();
 void dessine_perso();
 
+////OBJETS////
+void ajout_assiettes();
+void ajout_aliments(int y,int x);
+void prendre_objet();
+void prendre_nouv_objet();
+int colisions_objet1(int x,int y);
+int colisions_objet2(int x,int y);
+void update_position_objet();
+void update_actions();
+void update_decoupe();
+void update_tempsCuisson();
+void sortie_cusinie1();
+void sortie_cusinie2();
+void dessine_objet();
+void supprimer_assiette(Assiette *a_detruire);
+void supprimer_alliment(Alliment *a_detruire);
+
 ////COMMANDE////
-void ajout_commande(File *file);
-void update_commande(File *file);
-void update_tempsCommands(File *file);
-void dessine_commande(File *file);
-Command* retire_commande(File *file);
-int estVide(File *file);
+void ajout_commande();
+void update_commande();
+void update_tempsCommands();
+void supprimer_commande(Command *actuel);
+void dessine_commande();

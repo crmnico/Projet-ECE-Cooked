@@ -10,7 +10,7 @@ add_executable(OverCook main.c
         menu_1.c
         jeu.c
         update_direction.c
-        update_position.c
+        update_position_objet.c
         update_frame.c
         dessine_perso.c
         options.c
@@ -22,15 +22,30 @@ add_executable(OverCook main.c
         update_tempsCommands.c
         ajout_commande.c
         nombre_aleatoire.c
-        estVide.c
         initialisation_file.c
         suprimer_commande.c
         mouvement_perso.c
         initialisation_niveau.c
         initialisation_perso.c
-        initialise_menu.c
-        initialise_menu.c
         colisions_perso.c
-        colisions_map.c)
+        colisions_map.c
+        chargement_objets.c
+        choix_du_niveau.c
+        dessine_objet.c
+        ajout_assiettes.c
+        ajout_aliments.c
+        update_assiettes.c
+        update_actions.c
+        supprimer_objet.c
+        update_decoupe.c
+        supprimer_assiette.c
+        update_tempsCuisson.c
+        colisions_objets.c
+        prendre_objet.c
+        chargement_map.c
+        sortie_cuisine.c
+        choix_skin.c
+        choix_pseudo.c
+)
 
 target_link_libraries(OverCook -lmingw32 -lalleg44)
