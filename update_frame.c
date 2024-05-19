@@ -9,7 +9,7 @@ void update_frame() {
     {
         perso1.frame_counter=0;
     }
-    if (perso1.frame_counter >= 7) {
+    if (perso1.frame_counter >= 10) {
         perso1.frame_counter = 1;
     }
 
@@ -20,7 +20,7 @@ void update_frame() {
     {
         perso2.frame_counter=0;
     }
-    if (perso2.frame_counter >= 7) {
+    if (perso2.frame_counter >= 10) {
         perso2.frame_counter = 1;
     }
 }
